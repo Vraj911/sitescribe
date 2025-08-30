@@ -17,7 +17,7 @@ document.getElementById('run').onclick = async () => {
         const res = await window.electronAPI.runCommand(folder, command);
         
         if (res.success) {
-            const resultText = formatResult(res);
+            const resultText = formatResult(res.data);
             showResult(resultText, 'success');
         } else {
             showResult('Error: ' + res.error, 'error');

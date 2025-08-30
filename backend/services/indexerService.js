@@ -49,29 +49,37 @@ function indexText(filePath, content) {
 }
 
 function indexSite(inputPath) {
-    const stats = fs.statSync(inputPath);
-    let files = [];
+    try {
+        console.log('Indexing site at:', inputPath);
+        const stats = fs.statSync(inputPath);
+        let files = [];
 
-    if (stats.isFile()) {
-        if (/\.(html?|css|md)$/i.test(inputPath)) files = [inputPath];
-        else return { rootDir: path.dirname(inputPath), files: [], kb: [] };
-    } else if (stats.isDirectory()) {
-        function walk(dir) {
-            for (const entry of fs.readdirSync(dir)) {
-                const fullPath = path.join(dir, entry);
-                if (fs.statSync(fullPath).isDirectory()) walk(fullPath);
-                else if (/\.(html?|css|md)$/i.test(entry)) files.push(fullPath);
+        if (stats.isFile()) {
+            if (/\.(html?|css|md)$/i.test(inputPath)) files = [inputPath];
+            else return { rootDir: path.dirname(inputPath), files: [], kb: [] };
+        } else if (stats.isDirectory()) {
+            function walk(dir) {
+                for (const entry of fs.readdirSync(dir)) {
+                    const fullPath = path.join(dir, entry);
+                    if (fs.statSync(fullPath).isDirectory()) walk(fullPath);
+                    else if (/\.(html?|css|md)$/i.test(entry)) files.push(fullPath);
+                }
             }
+            walk(inputPath);
         }
-        walk(inputPath);
+
+        const kb = files.map(f => {
+            const content = safeRead(f);
+            return /\.html?$/i.test(f) ? indexHtml(f, content) : indexText(f, content);
+        });
+
+        const result = { rootDir: path.dirname(inputPath), files, kb };
+        console.log('Site indexing completed:', result);
+        return result;
+    } catch (error) {
+        console.error('Error in indexSite:', error);
+        throw error;
     }
-
-    const kb = files.map(f => {
-        const content = safeRead(f);
-        return /\.html?$/i.test(f) ? indexHtml(f, content) : indexText(f, content);
-    });
-
-    return { rootDir: path.dirname(inputPath), files, kb };
 }
 
 module.exports = { indexSite };

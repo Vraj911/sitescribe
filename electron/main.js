@@ -1,6 +1,14 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
-const backend = require('../backend/server.js');
+
+let backend;
+try {
+    backend = require('../backend/server.js');
+    console.log('Backend loaded successfully');
+} catch (error) {
+    console.error('Failed to load backend:', error);
+    backend = null;
+}
 
 function createWindow() {
     const win = new BrowserWindow({
@@ -24,9 +32,13 @@ app.on('window-all-closed', () => {
 
 ipcMain.handle('run-command', async (event, { folder, command }) => {
     try {
+        if (!backend) {
+            return { success: false, error: 'Backend not loaded' };
+        }
         const result = await backend.processCommand(folder, command);
-        return result;
+        return { success: true, data: result };
     } catch (err) {
+        console.error('Command execution error:', err);
         return { success: false, error: err.message };
     }
 });
