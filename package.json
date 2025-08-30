@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "main": "electron/main.js",
   "scripts": {
-    "start": "npx electron .",
-    "dev": "npx electron . --dev"
+    "start": "node server.js",
+    "electron": "npx electron ."
   },
   "dependencies": {
     "cheerio": "^1.0.0-rc.12",
