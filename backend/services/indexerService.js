@@ -1,7 +1,6 @@
 const fs = require('fs');
 const path = require('path');
 const cheerio = require('cheerio');
-
 function safeRead(filePath) {
     try {
         return fs.readFileSync(filePath, 'utf8');
@@ -9,7 +8,6 @@ function safeRead(filePath) {
         return '';
     }
 }
-
 function buildSelector($el) {
     const parts = [];
     let node = $el;
@@ -26,7 +24,6 @@ function buildSelector($el) {
     }
     return parts.join(' > ');
 }
-
 function indexHtml(filePath, html) {
     const $ = cheerio.load(html);
     const items = [];
@@ -42,12 +39,10 @@ function indexHtml(filePath, html) {
     });
     return { file: filePath, type: 'html', items };
 }
-
 function indexText(filePath, content) {
     const lines = content.split(/\r?\n/);
     return { file: filePath, type: 'text', lines: lines.slice(0, 500) };
 }
-
 function indexSite(inputPath) {
     try {
         console.log('Indexing site at:', inputPath);
@@ -67,12 +62,10 @@ function indexSite(inputPath) {
             }
             walk(inputPath);
         }
-
         const kb = files.map(f => {
             const content = safeRead(f);
             return /\.html?$/i.test(f) ? indexHtml(f, content) : indexText(f, content);
         });
-
         const result = { rootDir: path.dirname(inputPath), files, kb };
         console.log('Site indexing completed:', result);
         return result;
@@ -81,5 +74,4 @@ function indexSite(inputPath) {
         throw error;
     }
 }
-
 module.exports = { indexSite };
